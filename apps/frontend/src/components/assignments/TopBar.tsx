@@ -43,17 +43,21 @@ export function TopBar({ variant = "assignment" }: TopBarProps) {
               style={{
                 width: "40px",
                 height: "40px",
+                borderRadius: "100px",
+                background: "#FFFFFF",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "none",
+                flexShrink: 0,
+                gap: "12px",
+                boxShadow:
+                  "0px 32px 48px rgba(0,0,0,0.2), 0px 16px 48px rgba(0,0,0,0.12)",
                 border: "none",
                 cursor: "pointer",
                 padding: 0,
-                flexShrink: 0,
               }}
             >
-              <ChevronLeft style={{ width: "20px", height: "20px", color: "#6B7280" }} />
+              <ChevronLeft style={{ width: "24px", height: "24px", color: "#303030" }} />
             </button>
 
             <button
@@ -98,17 +102,21 @@ export function TopBar({ variant = "assignment" }: TopBarProps) {
               style={{
                 width: "40px",
                 height: "40px",
+                borderRadius: "100px",
+                background: "#FFFFFF",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "none",
+                flexShrink: 0,
+                gap: "12px",
+                boxShadow:
+                  "0px 32px 48px rgba(0,0,0,0.2), 0px 16px 48px rgba(0,0,0,0.12)",
                 border: "none",
                 cursor: "pointer",
                 padding: 0,
-                flexShrink: 0,
               }}
             >
-              <ChevronLeft style={{ width: "20px", height: "20px", color: "#303030" }} />
+              <ChevronLeft style={{ width: "24px", height: "24px", color: "#303030" }} />
             </button>
 
             <div
