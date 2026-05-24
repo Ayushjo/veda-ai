@@ -38,6 +38,10 @@ const INITIAL_ASSIGNMENTS: Assignment[] = [
   { id: 6, name: "Chemistry Worksheet",   assignedOn: "16-06-2025", due: "23-06-2025" },
   { id: 7, name: "Biology Diagrams",      assignedOn: "14-06-2025", due: "21-06-2025" },
   { id: 8, name: "English Literature",    assignedOn: "20-06-2025", due: "27-06-2025" },
+  { id: 9, name: "Geography Map Quiz",     assignedOn: "21-06-2025", due: "28-06-2025" },
+  { id: 10, name: "Computer Science Task", assignedOn: "22-06-2025", due: "29-06-2025" },
+  { id: 11, name: "Hindi Grammar Drill",    assignedOn: "23-06-2025", due: "30-06-2025" },
+  { id: 12, name: "Art Reflection Sheet",   assignedOn: "24-06-2025", due: "01-07-2025" },
 ];
 
 // ─── Mobile bottom-nav items (Assignments active) ─────────────────────────────
@@ -521,22 +525,60 @@ export default function AssignmentsPage() {
             </div>
           </div>
           {/* Fixed bottom: FAB + nav pill */}
-          <div className="md:hidden" style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 157, zIndex: 40, background: "linear-gradient(to bottom, transparent 0%, transparent 50%, rgba(206,206,206,0.7) 68%, rgba(206,206,206,0.98) 78%)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", paddingBottom: 12, borderRadius: "24px 24px 0 0", overflow: "hidden" }}>
-            <div style={{ width: "100%", maxWidth: 373, height: 48, display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 8, paddingRight: 0 }}>
-              <Link href="/create" aria-label="Create assignment" style={{ width: 48, height: 48, borderRadius: "100px", background: "white", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", boxShadow: "0px 32px 48px rgba(0,0,0,0.2), 0px 16px 48px rgba(0,0,0,0.12)", flexShrink: 0 }}>
-                <Plus style={{ width: 20, height: 20, color: "#E8460E" }} strokeWidth={2} />
-              </Link>
-            </div>
-            <div style={{ width: "100%", maxWidth: 373, height: 72, borderRadius: 24, padding: "0 24px", background: "#181818", boxShadow: "0px 32px 48px rgba(0,0,0,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              {BOTTOM_NAV.map(({ label, Icon, active }) => (
-                <button key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 52, gap: 6, border: "none", background: "none", cursor: "pointer", flexShrink: 0 }}>
-                  <div style={active ? { background: "white", borderRadius: "100px", padding: "5px 10px", display: "flex", alignItems: "center", justifyContent: "center" } : { display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon style={{ width: 18, height: 18, color: active ? "#181818" : "rgba(255,255,255,0.25)" }} />
-                  </div>
-                  <span style={{ fontFamily: F, fontSize: 12, fontWeight: active ? 700 : 600, letterSpacing: "-0.04em", lineHeight: 1, color: active ? "#FFFFFF" : "rgba(255,255,255,0.25)" }}>{label}</span>
-                </button>
-              ))}
-            </div>
+          <div
+            style={{
+              position: "fixed",
+              bottom: 0,
+              left: "316px",
+              right: 0,
+              height: "73px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 40,
+              background:
+                "linear-gradient(176.12deg, rgba(234, 234, 234, 0) 3.17%, #DADADA 81.22%)",
+              backdropFilter: "blur(40px)",
+              WebkitBackdropFilter: "blur(40px)",
+            }}
+          >
+            <button
+              style={{
+                width: "208px",
+                height: "46px",
+                borderRadius: "48px",
+                paddingTop: "12px",
+                paddingBottom: "12px",
+                paddingLeft: "24px",
+                paddingRight: "24px",
+                background: "#181818",
+                border: "1.5px solid transparent",
+                backgroundClip: "padding-box",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.25), 0px 32px 48px rgba(0,0,0,0.2), 0px 16px 48px rgba(0,0,0,0.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "4px",
+                cursor: "pointer",
+              }}
+            >
+              <Plus style={{ width: "20px", height: "20px", color: "white" }} />
+              <span
+                style={{
+                  fontFamily:
+                    "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
+                  fontWeight: 500,
+                  fontSize: "16px",
+                  lineHeight: "140%",
+                  letterSpacing: "-0.04em",
+                  color: "white",
+                  textAlign: "center",
+                }}
+              >
+                Create Assignment
+              </span>
+            </button>
           </div>
         </div>
       ) : (
