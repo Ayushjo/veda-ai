@@ -2,19 +2,17 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronDown, Bell, LayoutGrid, Menu } from "lucide-react";
+import { ChevronLeft, ChevronDown, Bell, LayoutGrid, Menu, Sparkles } from "lucide-react";
 
-export function TopBar() {
+interface TopBarProps {
+  variant?: "assignment" | "paper";
+}
+
+export function TopBar({ variant = "assignment" }: TopBarProps) {
   const router = useRouter();
 
   return (
     <>
-      {/* ══════════════════════════════════════════════════════════════
-          DESKTOP — fixed floating card
-          position: fixed, top 12px, left 327px, right 12px
-          height 56px, border-radius 16px, padding 0 12px 0 24px
-          bg: #FFFFFFBF (semi-transparent), backdrop-blur 12px
-      ══════════════════════════════════════════════════════════════ */}
       <header
         className="hidden md:flex"
         style={{
@@ -37,62 +35,111 @@ export function TopBar() {
             "0px 32px 48px rgba(0,0,0,0.2), 0px 16px 48px rgba(0,0,0,0.12)",
         }}
       >
-
-        {/* ── Left: back button + breadcrumb ── */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-
-          {/* Back button — 40×40, no bg, no border */}
-          <button
-            onClick={() => router.back()}
-            aria-label="Go back"
-            style={{
-              width: "40px",
-              height: "40px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              flexShrink: 0,
-            }}
-          >
-            <ChevronLeft style={{ width: "20px", height: "20px", color: "#303030" }} />
-          </button>
-
-          {/* Breadcrumb — grid icon + "Assignment" text */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              height: "20px",
-            }}
-          >
-            <LayoutGrid
-              style={{ width: "20px", height: "20px", color: "#A9A9A9", flexShrink: 0 }}
-            />
-            <span
+        {variant === "paper" ? (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button
+              onClick={() => router.back()}
+              aria-label="Go back"
               style={{
-                fontFamily: "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
-                fontWeight: 600,
-                fontSize: "16px",
-                lineHeight: "100%",
-                letterSpacing: "-0.04em",
-                color: "#A9A9A9",
-                whiteSpace: "nowrap",
+                width: "40px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                flexShrink: 0,
               }}
             >
-              Assignment
-            </span>
+              <ChevronLeft style={{ width: "20px", height: "20px", color: "#6B7280" }} />
+            </button>
+
+            <button
+              onClick={() => router.push("/create")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                height: "20px",
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+              }}
+            >
+              <Sparkles
+                style={{ width: "18.32px", height: "17.32px", color: "#A9A9A9" }}
+              />
+              <span
+                style={{
+                  fontFamily: "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
+                  fontWeight: 600,
+                  fontSize: "16px",
+                  lineHeight: "100%",
+                  letterSpacing: "-0.04em",
+                  color: "#A9A9A9",
+                  width: "85px",
+                  height: "19px",
+                  verticalAlign: "middle",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Create New
+              </span>
+            </button>
           </div>
-        </div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button
+              onClick={() => router.back()}
+              aria-label="Go back"
+              style={{
+                width: "40px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                flexShrink: 0,
+              }}
+            >
+              <ChevronLeft style={{ width: "20px", height: "20px", color: "#303030" }} />
+            </button>
 
-        {/* ── Right: notification + profile card ── */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                height: "20px",
+              }}
+            >
+              <LayoutGrid
+                style={{ width: "20px", height: "20px", color: "#A9A9A9", flexShrink: 0 }}
+              />
+              <span
+                style={{
+                  fontFamily: "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
+                  fontWeight: 600,
+                  fontSize: "16px",
+                  lineHeight: "100%",
+                  letterSpacing: "-0.04em",
+                  color: "#A9A9A9",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Assignment
+              </span>
+            </div>
+          </div>
+        )}
+
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-
-          {/* Notification button — 36×36, rounded-full, bg #F6F6F6 */}
           <button
             aria-label="Notifications"
             style={{
@@ -111,7 +158,6 @@ export function TopBar() {
             }}
           >
             <Bell style={{ width: "24px", height: "24px", color: "#303030" }} />
-            {/* Red dot badge */}
             <span
               style={{
                 position: "absolute",
@@ -126,7 +172,6 @@ export function TopBar() {
             />
           </button>
 
-          {/* Profile card — 157×44, border-radius 12px, padding 6px 12px */}
           <button
             style={{
               display: "flex",
@@ -144,7 +189,6 @@ export function TopBar() {
                 "0px 32px 48px rgba(0,0,0,0.2), 0px 16px 48px rgba(0,0,0,0.12)",
             }}
           >
-            {/* Avatar — 32×32, rounded-full, bg #F6F6F6 */}
             <div
               style={{
                 width: "32px",
@@ -160,19 +204,11 @@ export function TopBar() {
             >
               <svg viewBox="0 0 32 32" fill="none" style={{ width: "32px", height: "32px" }}>
                 <circle cx="16" cy="16" r="16" fill="#F0ECE8" />
-                {/* Body */}
                 <path d="M4 32c0-6.63 5.37-12 12-12s12 5.37 12 12" fill="#7C3AED" />
-                {/* Head */}
                 <circle cx="16" cy="13" r="7" fill="#FBBF91" />
-                {/* Hair */}
-                <path
-                  d="M9 11c0-3.87 3.13-7 7-7s7 3.13 7 7"
-                  fill="#1A1A1A"
-                />
-                {/* Eyes */}
+                <path d="M9 11c0-3.87 3.13-7 7-7s7 3.13 7 7" fill="#1A1A1A" />
                 <circle cx="13.5" cy="13" r="1" fill="#1A1A1A" />
                 <circle cx="18.5" cy="13" r="1" fill="#1A1A1A" />
-                {/* Smile */}
                 <path
                   d="M14 16 Q16 18 18 16"
                   stroke="#1A1A1A"
@@ -183,7 +219,6 @@ export function TopBar() {
               </svg>
             </div>
 
-            {/* Name + chevron — width 93px, gap 4px */}
             <div
               style={{
                 display: "flex",
@@ -213,13 +248,9 @@ export function TopBar() {
               />
             </div>
           </button>
-
         </div>
       </header>
 
-      {/* ══════════════════════════════════════════════════════════════
-          MOBILE — simple sticky header (unchanged)
-      ══════════════════════════════════════════════════════════════ */}
       <header className="md:hidden h-14 bg-white border-b border-[#EFEFEF] flex items-center justify-between px-4 sticky top-0 z-20">
         <div className="flex items-center gap-2">
           <button

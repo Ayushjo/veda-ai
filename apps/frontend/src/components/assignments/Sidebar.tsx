@@ -18,11 +18,22 @@ const NAV_ITEMS = [
   { label: "My Groups",          icon: Users,      href: "/groups"     },
   { label: "Assignments",        icon: FileText,   href: "/assignments" },
   { label: "AI Teacher's Toolkit", icon: Wand2,   href: "/toolkit"    },
-  { label: "My Library",         icon: BookOpen,   href: "/library"    },
+  { label: "My Library",         icon: BookOpen,   href: "/library", badge: "32" },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  ctaLabel?: string;
+  ctaHref?: string;
+  activeHref?: string;
+}
+
+export function Sidebar({
+  ctaLabel = "Create Assignment",
+  ctaHref = "/create",
+  activeHref,
+}: SidebarProps) {
   const pathname = usePathname();
+  const currentHref = activeHref ?? pathname;
 
   return (
     <aside
@@ -51,7 +62,7 @@ export function Sidebar() {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "56px",
+          gap: "0px",
           width: "251px",
         }}
       >
@@ -61,20 +72,21 @@ export function Sidebar() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "10px",
+            gap: "8px",
             flexShrink: 0,
           }}
         >
           {/* Logo mark — 48×48 so the actual icon is clearly visible */}
           <img
-            src="/logo-desktop.png"
+            src="/logo-mobile.png"
             alt="VedaAI logo"
             style={{
-              width: "48px",
-              height: "48px",
+              width: "40px",
+              height: "40px",
+              borderRadius: "15px",
               flexShrink: 0,
               display: "block",
-              objectFit: "contain",
+              objectFit: "cover",
             }}
           />
 
@@ -95,11 +107,11 @@ export function Sidebar() {
         </div>
 
         {/* Create button + Nav grouped together with 8px gap */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0px" }}>
 
           {/* Create Assignment button — gradient border + deep shadows */}
           <Link
-            href="/create"
+            href={ctaHref}
             style={{
               display: "flex",
               alignItems: "center",
@@ -125,6 +137,8 @@ export function Sidebar() {
               textDecoration: "none",
               flexShrink: 0,
               whiteSpace: "nowrap",
+              marginTop: "24px",
+              marginBottom: "24px",
             }}
           >
             <Sparkles
@@ -141,15 +155,15 @@ export function Sidebar() {
                 lineHeight: "28px",
               }}
             >
-              Create Assignment
+              {ctaLabel}
             </span>
           </Link>
 
           {/* Nav items list — gap 8px */}
           <nav style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
+            {NAV_ITEMS.map(({ label, icon: Icon, href, badge }) => {
               const isActive =
-                href === "/" ? pathname === "/" : pathname.startsWith(href);
+                href === "/" ? currentHref === "/" : currentHref.startsWith(href);
 
               return (
                 <Link
@@ -192,6 +206,31 @@ export function Sidebar() {
                   >
                     {label}
                   </span>
+                  {badge ? (
+                    <span
+                      style={{
+                        width: "37px",
+                        height: "20px",
+                        borderRadius: "8px",
+                        padding: "0 10px",
+                        background: "#FF5623",
+                        boxShadow: "inset 0px 0px 32.3px rgba(255,161,10,0.25)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontFamily: "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
+                        fontWeight: 600,
+                        fontSize: "14px",
+                        lineHeight: "140%",
+                        letterSpacing: "-0.04em",
+                        color: "#FFFFFF",
+                        flexShrink: 0,
+                        marginLeft: "6px",
+                      }}
+                    >
+                      {badge}
+                    </span>
+                  ) : null}
                 </Link>
               );
             })}

@@ -221,8 +221,8 @@ function DesktopPaper({
 
   return (
     <div className="hidden sm:block min-h-screen" style={{ background: "#E8E8E8" }}>
-      <Sidebar />
-      <TopBar />
+      <Sidebar ctaLabel="AI Teacher's Toolkit" ctaHref="/toolkit" activeHref="/" />
+      <TopBar variant="paper" />
 
       <div
         style={{
@@ -639,8 +639,8 @@ export default function PaperPage() {
     return (
       <>
         <div className="hidden sm:block">
-          <Sidebar />
-          <TopBar />
+          <Sidebar ctaLabel="AI Teacher's Toolkit" ctaHref="/toolkit" activeHref="/" />
+          <TopBar variant="paper" />
           <LoadingState />
         </div>
         <div className="sm:hidden min-h-screen bg-[#CECECE]">
@@ -655,8 +655,8 @@ export default function PaperPage() {
     return (
       <>
         <div className="hidden sm:block">
-          <Sidebar />
-          <TopBar />
+          <Sidebar ctaLabel="AI Teacher's Toolkit" ctaHref="/toolkit" activeHref="/" />
+          <TopBar variant="paper" />
           <ErrorState message={error ?? "Paper not found"} onBack={() => router.push("/assignments")} />
         </div>
         <div className="sm:hidden min-h-screen bg-[#CECECE]">
