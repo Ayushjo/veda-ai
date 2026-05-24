@@ -1,0 +1,7 @@
+{
+  "name": "veda-ai",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ]
+}
