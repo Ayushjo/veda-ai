@@ -1,9 +1,17 @@
 import { Worker, Job } from 'bullmq';
-import redisClient, { setCache } from '../services/cache.service.js';
+import { Redis as IORedis } from 'ioredis';
+import { setCache } from '../services/cache.service.js';
+import { config } from '../config.js';
 import { Assignment } from '../models/Assignment.model.js';
 import { Paper } from '../models/Paper.model.js';
 import { generateQuestionPaper } from '../services/ai.service.js';
 import { getIO } from '../socket/socket.js';
+
+// Dedicated connection for BullMQ Worker — never share with cache
+const workerConnection = new IORedis(config.redisUrl, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+});
 
 const generationWorker = new Worker(
   'generation-queue',
@@ -29,6 +37,7 @@ const generationWorker = new Worker(
     }
 
     // 4. Generate paper via Claude
+    console.log('[worker] fileText length:', assignment.fileText?.length ?? 0);
     const paperData = await generateQuestionPaper(assignment);
 
     // 5. Calculate totalMarks
@@ -69,7 +78,7 @@ const generationWorker = new Worker(
       console.warn('Socket not available, skipping completion emit');
     }
   },
-  { connection: redisClient },
+  { connection: workerConnection },
 );
 
 // Worker event handlers

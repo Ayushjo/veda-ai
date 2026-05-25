@@ -30,6 +30,7 @@ export async function createAssignment(req: Request, res: Response): Promise<voi
     );
 
     // Step 1: Always save to MongoDB — this must succeed
+    console.log('[controller] fileText length:', (req.body.fileText || '').length);
     const assignment = await Assignment.create({
       title,
       subject,

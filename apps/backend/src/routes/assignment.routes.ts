@@ -10,6 +10,15 @@ import * as assignmentController from '../controllers/assignment.controller.js';
 
 const router = Router();
 
+function uploadMiddleware(req: Request, res: Response, next: NextFunction) {
+  upload.single('file')(req, res, (err: any) => {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    next();
+  });
+}
+
 // ─── Zod schema ──────────────────────────────────────────────────────────────
 
 const CreateAssignmentSchema = z.object({
@@ -34,7 +43,7 @@ const CreateAssignmentSchema = z.object({
 
 // ─── PDF / text parse middleware ─────────────────────────────────────────────
 
-async function parseFileText(req: Request, _res: Response, next: NextFunction): Promise<void> {
+async function parsePdfMiddleware(req: Request, _res: Response, next: NextFunction): Promise<void> {
   try {
     if (req.file) {
       if (req.file.mimetype === 'application/pdf') {
@@ -47,18 +56,19 @@ async function parseFileText(req: Request, _res: Response, next: NextFunction): 
   } catch {
     // If parsing fails, continue without fileText — non-fatal
   }
+  console.log('[upload] fileText length:', req.body.fileText?.length ?? 0);
   next();
 }
 
 // ─── questionTypes JSON parse middleware ──────────────────────────────────────
 
 function parseQuestionTypes(req: Request, _res: Response, next: NextFunction): void {
-  try {
-    if (typeof req.body.questionTypes === 'string') {
+  if (typeof req.body.questionTypes === 'string') {
+    try {
       req.body.questionTypes = JSON.parse(req.body.questionTypes);
+    } catch {
+      req.body.questionTypes = [];
     }
-  } catch {
-    // Will be caught by Zod validation
   }
   next();
 }
@@ -67,8 +77,8 @@ function parseQuestionTypes(req: Request, _res: Response, next: NextFunction): v
 
 router.post(
   '/',
-  upload.single('file'),
-  parseFileText,
+  uploadMiddleware,
+  parsePdfMiddleware,
   parseQuestionTypes,
   validateBody(CreateAssignmentSchema),
   assignmentController.createAssignment,

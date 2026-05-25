@@ -1,8 +1,15 @@
 import { Queue } from 'bullmq';
-import redisClient from './cache.service.js';
+import { Redis as IORedis } from 'ioredis';
+import { config } from '../config.js';
+
+// Dedicated connection for BullMQ Queue — never share with cache
+const queueConnection = new IORedis(config.redisUrl, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+});
 
 const generationQueue = new Queue('generation-queue', {
-  connection: redisClient,
+  connection: queueConnection,
 });
 
 generationQueue.on('error', (err: Error) => {

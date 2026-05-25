@@ -7,6 +7,7 @@ import { Bell, Download, Loader2, RefreshCw } from "lucide-react";
 import { Sidebar } from "@/components/assignments/Sidebar";
 import { TopBar } from "@/components/assignments/TopBar";
 import api from "@/lib/api";
+import { downloadPaper } from "@/lib/pdf-export";
 
 const BG = "var(--font-bricolage), 'Bricolage Grotesque', sans-serif";
 const INTER = "var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif";
@@ -621,7 +622,7 @@ export default function PaperPage() {
   }, [paper]);
 
   const handleDownload = () => {
-    window.print();
+    downloadPaper();
   };
 
   const handleRegenerate = async () => {
@@ -671,6 +672,7 @@ export default function PaperPage() {
     <>
       <style>{`
         @media print {
+          #paper-document { padding: 20px !important; }
           body * { visibility: hidden; }
           #paper-document, #paper-document *,
           #paper-document-desktop, #paper-document-desktop * { visibility: visible; }

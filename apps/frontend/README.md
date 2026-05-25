@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VedaAI — Frontend
 
-## Getting Started
+Next.js 14 App Router frontend with real-time WebSocket updates,
+Zustand state management, and a structured question paper viewer.
 
-First, run the development server:
+## Prerequisites
+
+- Node.js 18+
+- Backend server running (see backend README)
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Create .env.local file
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_WS_URL=http://localhost:8000
+```
+
+### 3. Run development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Production build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+## Pages
 
-To learn more about Next.js, take a look at the following resources:
+| Route        | Description                    |
+|--------------|--------------------------------|
+| /            | Redirects to /create           |
+| /create      | Assignment creation form       |
+| /paper/:id   | Generated question paper viewer|
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## State Management
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**assignmentStore** — tracks form data, job status, and IDs
 
-## Deploy on Vercel
+```ts
+{ assignmentId, paperId, jobStatus, setAssignment, setJobStatus, setPaperId }
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**paperStore** — holds the fetched paper document
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```ts
+{ paper, isLoading, error, setPaper, setLoading, setError }
+```
+
+## Real-time Flow
+
+1. Form submits → POST /api/assignments → receives assignmentId
+2. useGenerationStatus(assignmentId) subscribes via Socket.IO
+3. Backend emits job:queued → job:processing → job:completed
+4. On job:completed, stores paperId and redirects to /paper/:id
+
+## Key Components
+src/
+├── app/
+│   ├── create/page.tsx           Assignment form page
+│   └── paper/[id]/page.tsx       Paper viewer page
+├── components/
+│   ├── create/                   Form components
+│   └── paper/                    Paper viewer components
+├── store/
+│   ├── assignmentStore.ts        Assignment + job state
+│   └── paperStore.ts             Generated paper state
+└── hooks/
+├── useSocket.ts              Socket.IO singleton
+└── useGenerationStatus.ts    Job event subscriber
+
+## Environment Variables
+
+| Variable            | Required | Description              |
+|---------------------|----------|--------------------------|
+| NEXT_PUBLIC_API_URL | Yes      | Backend API base URL     |
+| NEXT_PUBLIC_WS_URL  | Yes      | Backend WebSocket URL    |
