@@ -652,18 +652,77 @@ export default function PaperPage() {
       return;
     }
 
+    let clone: HTMLElement | null = null;
+
     try {
       const html2pdf = (await import('html2pdf.js')).default;
 
+      // Clone the element so we don't mutate the real DOM
+      clone = element.cloneNode(true) as HTMLElement;
+
+      // Inline all computed styles onto every element in the clone
+      // and replace any oklch() values with safe fallbacks
+      const sourceElements = [element, ...Array.from(element.querySelectorAll('*'))] as HTMLElement[];
+      const allElements = [clone, ...Array.from(clone.querySelectorAll('*'))] as HTMLElement[];
+
+      allElements.forEach((el, index) => {
+        const computed = window.getComputedStyle(sourceElements[index] ?? element);
+
+        for (let i = 0; i < computed.length; i++) {
+          const property = computed[i];
+          const value = computed.getPropertyValue(property);
+          const safeValue = value.includes('oklch')
+            ? value.replace(/oklch\([^)]*\)/g, '#000000')
+            : value;
+          el.style.setProperty(property, safeValue, computed.getPropertyPriority(property));
+        }
+
+        // Remove oklch from inline styles by replacing with safe colors
+        const style = el.getAttribute('style') || '';
+        if (style.includes('oklch')) {
+          el.setAttribute('style', style.replace(/oklch\([^)]*\)/g, '#000000'));
+        }
+
+        // Force safe background and color values for common elements
+        el.style.setProperty('color', computed.color.includes('oklch') ? '#1a1a1a' : computed.color);
+        el.style.setProperty(
+          'background-color',
+          computed.backgroundColor.includes('oklch') ? '#ffffff' : computed.backgroundColor
+        );
+      });
+
+      // Append clone off-screen temporarily
+      clone.style.position = 'fixed';
+      clone.style.top = '-9999px';
+      clone.style.left = '-9999px';
+      clone.style.width = '794px';
+      clone.style.backgroundColor = '#ffffff';
+      clone.style.padding = '32px';
+      document.body.appendChild(clone);
+
       const options = {
         margin: [10, 10, 10, 10] as [number, number, number, number],
-        filename: `question-paper-${paperId}.pdf`,
+        filename: `question-paper.pdf`,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: {
           scale: 2,
           useCORS: true,
           letterRendering: true,
-          scrollY: 0
+          scrollY: 0,
+          backgroundColor: '#ffffff',
+          onclone: (clonedDoc: Document) => {
+            const allEls = clonedDoc.querySelectorAll('*');
+            allEls.forEach((el) => {
+              const htmlEl = el as HTMLElement;
+              const style = htmlEl.getAttribute('style') || '';
+              if (style.includes('oklch')) {
+                htmlEl.setAttribute(
+                  'style',
+                  style.replace(/oklch\([^)]*\)/g, '#000000')
+                );
+              }
+            });
+          }
         },
         jsPDF: {
           unit: 'mm' as const,
@@ -672,9 +731,13 @@ export default function PaperPage() {
         }
       };
 
-      await html2pdf().set(options).from(element).save();
+      await html2pdf().set(options).from(clone).save();
     } catch (err) {
       console.error('PDF generation failed:', err);
+    } finally {
+      if (clone?.parentNode) {
+        clone.parentNode.removeChild(clone);
+      }
     }
   };
 
@@ -732,8 +795,18 @@ export default function PaperPage() {
   return (
     <>
       <style>{`
+        #paper-document,
+        #paper-document * {
+          --tw-prose-body: #1a1a1a;
+          --tw-prose-headings: #1a1a1a;
+        }
+
         @media print {
           #paper-document { padding: 20px !important; }
+          #paper-document {
+            color: #1a1a1a !important;
+            background-color: #ffffff !important;
+          }
           body * { visibility: hidden; }
           #paper-document, #paper-document * { visibility: visible; }
           #paper-document {
