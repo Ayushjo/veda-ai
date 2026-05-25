@@ -214,11 +214,15 @@ function DesktopPaper({
   paper,
   allQuestions,
   onDownload,
+  onRegenerate,
+  isRegenerating,
   documentId,
 }: {
   paper: PaperData;
   allQuestions: Question[];
   onDownload: () => void;
+  onRegenerate: () => void;
+  isRegenerating: boolean;
   documentId?: string;
 }) {
   const { metadata, sections } = paper;
@@ -281,28 +285,56 @@ function DesktopPaper({
               classes on the NCERT chapters:
             </p>
 
-            <button
-              onClick={onDownload}
-              style={{
-                width: 200,
-                height: 44,
-                borderRadius: 100,
-                padding: "0 24px",
-                background: "white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 4,
-                border: "none",
-                cursor: "pointer",
-                flexShrink: 0,
-              }}
-            >
-              <Download style={{ width: 24, height: 24, color: "#303030" }} />
-              <span style={{ fontFamily: BG, fontWeight: 500, fontSize: 16, lineHeight: "22px", letterSpacing: "-0.04em", color: "#303030" }}>
-                Download as PDF
-              </span>
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={onRegenerate}
+                disabled={isRegenerating}
+                style={{
+                  width: 176,
+                  height: 44,
+                  borderRadius: 100,
+                  padding: "0 20px",
+                  background: "rgba(255,255,255,0.12)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  border: "1px solid rgba(255,255,255,0.45)",
+                  cursor: isRegenerating ? "not-allowed" : "pointer",
+                  opacity: isRegenerating ? 0.65 : 1,
+                  flexShrink: 0,
+                }}
+              >
+                <RefreshCw style={{ width: 20, height: 20, color: "white" }} />
+                <span style={{ fontFamily: BG, fontWeight: 500, fontSize: 16, lineHeight: "22px", letterSpacing: "-0.04em", color: "white" }}>
+                  {isRegenerating ? "Regenerating..." : "Regenerate"}
+                </span>
+              </button>
+
+              <button
+                onClick={onDownload}
+                style={{
+                  width: 200,
+                  height: 44,
+                  borderRadius: 100,
+                  padding: "0 24px",
+                  background: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                  border: "none",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                <Download style={{ width: 24, height: 24, color: "#303030" }} />
+                <span style={{ fontFamily: BG, fontWeight: 500, fontSize: 16, lineHeight: "22px", letterSpacing: "-0.04em", color: "#303030" }}>
+                  Download as PDF
+                </span>
+              </button>
+            </div>
           </div>
 
           <div
@@ -660,7 +692,24 @@ export default function PaperPage() {
     setRegenerating(true);
     try {
       await api.post(`/api/assignments/${resolvedAssignmentId}/regenerate`);
-      router.push('/create');
+      const maxAttempts = 40;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        const res = await api.get<{ status: string; paperId: string | null }>(
+          `/api/assignments/${resolvedAssignmentId}/status`
+        );
+
+        if (res.data.status === "completed" && res.data.paperId && res.data.paperId !== paperId) {
+          router.push(`/paper/${res.data.paperId}`);
+          return;
+        }
+
+        if (res.data.status === "failed") {
+          throw new Error("Generation failed");
+        }
+      }
+
+      throw new Error("Generation timed out");
     } catch (err) {
       console.error('[regenerate] failed:', err);
       alert('Regeneration failed. Please try again.');
@@ -729,7 +778,7 @@ export default function PaperPage() {
         }
       `}</style>
 
-      <DesktopPaper paper={paper} allQuestions={allQuestions} onDownload={handleDownload} documentId={!isMobileLayout ? "paper-document" : undefined} />
+      <DesktopPaper paper={paper} allQuestions={allQuestions} onDownload={handleDownload} onRegenerate={handleRegenerate} isRegenerating={regenerating} documentId={!isMobileLayout ? "paper-document" : undefined} />
 
       <div
         className="sm:hidden relative min-h-screen overflow-x-hidden flex flex-col"
