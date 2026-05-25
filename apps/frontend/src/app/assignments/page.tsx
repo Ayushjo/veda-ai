@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Sidebar } from "@/components/assignments/Sidebar";
 import { TopBar } from "@/components/assignments/TopBar";
+import { MobileBottomNav } from "@/components/assignments/MobileBottomNav";
 
 // ─── Font shorthand ───────────────────────────────────────────────────────────
 const F = "var(--font-bricolage), 'Bricolage Grotesque', sans-serif";
@@ -477,7 +478,7 @@ export default function AssignmentsPage() {
       ══════════════════════════════════════════════════════════════ */}
       {hasAssignments ? (
         <div className="md:hidden" style={{ background: "#CECECE", minHeight: "100vh", overflowX: "hidden" }}>
-          <div style={{ width: "100%", maxWidth: 393, margin: "0 auto", paddingTop: 100, paddingBottom: 170, display: "flex", flexDirection: "column", gap: 24, padding: "100px 10px 170px" }}>
+          <div className="pb-40" style={{ width: "100%", maxWidth: 393, margin: "0 auto", paddingTop: 100, display: "flex", flexDirection: "column", gap: 24, padding: "100px 10px 160px" }}>
             {/* Header row */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 48, width: "100%" }}>
               <button style={{ width: 48, height: 48, borderRadius: "100px", background: "rgba(255,255,255,0.25)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", flexShrink: 0 }}>
@@ -524,62 +525,10 @@ export default function AssignmentsPage() {
               </div>
             </div>
           </div>
-          {/* Fixed bottom: FAB + nav pill */}
-          <div
-            style={{
-              position: "fixed",
-              bottom: 0,
-              left: "316px",
-              right: 0,
-              height: "73px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 40,
-              background:
-                "linear-gradient(176.12deg, rgba(234, 234, 234, 0) 3.17%, #DADADA 81.22%)",
-              backdropFilter: "blur(40px)",
-              WebkitBackdropFilter: "blur(40px)",
-            }}
-          >
-            <button
-              style={{
-                width: "208px",
-                height: "46px",
-                borderRadius: "48px",
-                paddingTop: "12px",
-                paddingBottom: "12px",
-                paddingLeft: "24px",
-                paddingRight: "24px",
-                background: "#181818",
-                border: "1.5px solid transparent",
-                backgroundClip: "padding-box",
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.25), 0px 32px 48px rgba(0,0,0,0.2), 0px 16px 48px rgba(0,0,0,0.12)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "4px",
-                cursor: "pointer",
-              }}
-            >
-              <Plus style={{ width: "20px", height: "20px", color: "white" }} />
-              <span
-                style={{
-                  fontFamily:
-                    "var(--font-bricolage), 'Bricolage Grotesque', sans-serif",
-                  fontWeight: 500,
-                  fontSize: "16px",
-                  lineHeight: "140%",
-                  letterSpacing: "-0.04em",
-                  color: "white",
-                  textAlign: "center",
-                }}
-              >
-                Create Assignment
-              </span>
-            </button>
-          </div>
+          <Link href="/create" aria-label="Create assignment" className="md:hidden fixed bottom-24 right-4 z-50" style={{ width: 48, height: 48, borderRadius: "100px", background: "white", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", boxShadow: "0px 32px 48px rgba(0,0,0,0.2), 0px 16px 48px rgba(0,0,0,0.12)" }}>
+            <Plus style={{ width: 20, height: 20, color: "#E8460E" }} strokeWidth={2} />
+          </Link>
+          <MobileBottomNav />
         </div>
       ) : (
         /* ══ MOBILE ZERO STATE ══ */

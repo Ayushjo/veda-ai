@@ -39,21 +39,22 @@ export default function CreateAssignmentPage() {
       {/* ── MOBILE: sticky pill navbar ───────────────────────────────── */}
       <div
         className="sm:hidden fixed top-0 left-0 right-0 z-30"
-        style={{ padding: "12.5px 10px", background: "rgba(255,255,255,0.01)" }}
+        style={{ width: "393px", maxWidth: "100vw", margin: "0 auto", padding: "18px 20px", background: "transparent", boxSizing: "border-box" }}
       >
         <div
-          className="w-full bg-white flex items-center justify-between"
-          style={{ borderRadius: "16px", height: "56px", paddingLeft: "12px", paddingRight: "16px" }}
+          className="bg-white flex items-center justify-between"
+          style={{ width: "373px", maxWidth: "100%", height: "56px", borderRadius: "16px", paddingLeft: "12px", paddingRight: "16px", boxSizing: "border-box" }}
         >
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div
-              className="bg-[#E8460E] flex items-center justify-center flex-shrink-0"
-              style={{ width: "28px", height: "28px", borderRadius: "6px" }}
-            >
-              <span className="text-white font-extrabold text-[11px] leading-none">V</span>
-            </div>
-            <span className="font-bold text-[#1A1A1A] text-[15px]">VedaAI</span>
+          <div className="flex items-center" style={{ gap: "8px" }}>
+            <img
+              src="/logo-mobile.png"
+              alt="VedaAI"
+              style={{ width: "40px", height: "40px", borderRadius: "15px", objectFit: "cover", flexShrink: 0 }}
+            />
+            <span style={{ fontFamily: "var(--font-bricolage), 'Bricolage Grotesque', sans-serif", fontWeight: 700, fontSize: "22px", color: "#303030", lineHeight: 1 }}>
+              VedaAI
+            </span>
           </div>
 
           {/* Right actions */}
@@ -168,12 +169,11 @@ export default function CreateAssignmentPage() {
         className="sm:hidden fixed bottom-0 left-0 right-0 z-40 flex flex-col"
         style={{
           padding: "8px 10px",
-          background: "rgba(255,255,255,0.01)",
-          backdropFilter: "blur(24px)",
+          background: "transparent",
         }}
       >
         {/* Prev / Next */}
-        <div className="flex items-center justify-center gap-3 mb-3">
+        <div className="flex items-center justify-center gap-3 mb-3" style={{ background: "transparent" }}>
           <button
             type="button"
             onClick={() => router.back()}
