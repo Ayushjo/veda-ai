@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSocket } from './useSocket';
 import { useAssignmentStore } from '@/store/assignmentStore';
+import api from '@/lib/api';
 import {
   JobQueuedEvent,
   JobProcessingEvent,
@@ -17,8 +18,10 @@ export function useGenerationStatus(assignmentId: string | null) {
   useEffect(() => {
     if (!assignmentId) return;
 
-    // Join the room for this assignment
-    socket.emit('subscribe', { assignmentId });
+    let attempts = 0;
+    const MAX_ATTEMPTS = 40; // 40 x 3s = 2 minutes
+    let redirectTimer: ReturnType<typeof setTimeout> | null = null;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
 
     const onQueued = (data: JobQueuedEvent) => {
       console.log('Job queued:', data);
@@ -32,10 +35,11 @@ export function useGenerationStatus(assignmentId: string | null) {
 
     const onCompleted = (data: JobCompletedEvent) => {
       console.log('Job completed:', data);
+      if (pollInterval) clearInterval(pollInterval);
       setJobStatus('completed');
       setPaperId(data.paperId);
       // Redirect to paper page after short delay for UX
-      setTimeout(() => {
+      redirectTimer = setTimeout(() => {
         router.push(`/paper/${data.paperId}`);
       }, 1000);
     };
@@ -50,8 +54,35 @@ export function useGenerationStatus(assignmentId: string | null) {
     socket.on('job:completed', onCompleted);
     socket.on('job:failed', onFailed);
 
-    // Cleanup — remove only this hook's listeners
+    // Join the room for this assignment after listeners are attached
+    socket.emit('subscribe', assignmentId);
+
+    // Polling fallback (catches missed socket events)
+    pollInterval = setInterval(async () => {
+      attempts++;
+      if (attempts > MAX_ATTEMPTS) {
+        if (pollInterval) clearInterval(pollInterval);
+        console.error('Generation timed out after 2 minutes');
+        return;
+      }
+
+      try {
+        const res = await api.get(`/api/assignments/${assignmentId}/status`);
+        if (res.data?.status === 'completed' && res.data?.paperId) {
+          if (pollInterval) clearInterval(pollInterval);
+          socket.off('job:completed', onCompleted);
+          setJobStatus('completed');
+          setPaperId(res.data.paperId);
+          router.push(`/paper/${res.data.paperId}`);
+        }
+      } catch {
+        // silently continue polling
+      }
+    }, 3000);
+
     return () => {
+      if (pollInterval) clearInterval(pollInterval);
+      if (redirectTimer) clearTimeout(redirectTimer);
       socket.off('job:queued', onQueued);
       socket.off('job:processing', onProcessing);
       socket.off('job:completed', onCompleted);
