@@ -7,7 +7,7 @@ import { Bell, Download, Loader2, RefreshCw } from "lucide-react";
 import { Sidebar } from "@/components/assignments/Sidebar";
 import { TopBar } from "@/components/assignments/TopBar";
 import api from "@/lib/api";
-import { downloadPaper } from "@/lib/pdf-export";
+import { useAssignmentStore } from "@/store/assignmentStore";
 
 const BG = "var(--font-bricolage), 'Bricolage Grotesque', sans-serif";
 const INTER = "var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif";
@@ -213,10 +213,12 @@ function DesktopPaper({
   paper,
   allQuestions,
   onDownload,
+  documentId,
 }: {
   paper: PaperData;
   allQuestions: Question[];
   onDownload: () => void;
+  documentId?: string;
 }) {
   const { metadata, sections } = paper;
 
@@ -303,7 +305,7 @@ function DesktopPaper({
           </div>
 
           <div
-            id="paper-document-desktop"
+            id={documentId}
             style={{
               width: 1060,
               borderRadius: 32,
@@ -424,11 +426,13 @@ function MobilePaper({
   allQuestions,
   answerMap,
   onDownload,
+  documentId,
 }: {
   paper: PaperData;
   allQuestions: Question[];
   answerMap: Map<number, string>;
   onDownload: () => void;
+  documentId?: string;
 }) {
   const { metadata, sections } = paper;
   let questionNumber = 1;
@@ -456,7 +460,7 @@ function MobilePaper({
           </div>
         </div>
 
-        <div id="paper-document" style={{ width: "355px", borderRadius: "32px", padding: "24px 16px", gap: "24px", background: "#F6F6F6", display: "flex", flexDirection: "column" }}>
+        <div id={documentId} style={{ width: "355px", borderRadius: "32px", padding: "24px 16px", gap: "24px", background: "#F6F6F6", display: "flex", flexDirection: "column" }}>
           <div style={{ width: "323px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
             <h1 style={{ margin: 0, fontFamily: INTER, fontWeight: 700, fontSize: "20px", lineHeight: "130%", letterSpacing: "-0.04em", color: "#303030" }}>
               VedaAI School
@@ -578,11 +582,25 @@ export default function PaperPage() {
   const params = useParams();
   const router = useRouter();
   const id = typeof params?.id === "string" ? params.id : Array.isArray(params?.id) ? params.id[0] : "";
+  const paperId = id;
+  const zustandAssignmentId = useAssignmentStore((s) => s.assignmentId);
 
   const [paper, setPaper] = useState<PaperData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
+  const [resolvedAssignmentId, setResolvedAssignmentId] = useState<string | null>(
+    zustandAssignmentId ?? null
+  );
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 639px)");
+    const updateLayout = () => setIsMobileLayout(query.matches);
+    updateLayout();
+    query.addEventListener("change", updateLayout);
+    return () => query.removeEventListener("change", updateLayout);
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -612,6 +630,12 @@ export default function PaperPage() {
     };
   }, [id]);
 
+  useEffect(() => {
+    if (!resolvedAssignmentId && paper?.assignmentId) {
+      setResolvedAssignmentId(paper.assignmentId);
+    }
+  }, [paper, resolvedAssignmentId]);
+
   const allQuestions = useMemo(() => paper?.sections.flatMap((section) => section.questions) ?? [], [paper]);
   const answerMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -621,17 +645,54 @@ export default function PaperPage() {
     return map;
   }, [paper]);
 
-  const handleDownload = () => {
-    downloadPaper();
+  const handleDownload = async () => {
+    const element = document.getElementById('paper-document');
+    if (!element) {
+      console.error('paper-document element not found');
+      return;
+    }
+
+    try {
+      const html2pdf = (await import('html2pdf.js')).default;
+
+      const options = {
+        margin: [10, 10, 10, 10] as [number, number, number, number],
+        filename: `question-paper-${paperId}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          scrollY: 0
+        },
+        jsPDF: {
+          unit: 'mm' as const,
+          format: 'a4' as const,
+          orientation: 'portrait' as const
+        }
+      };
+
+      await html2pdf().set(options).from(element).save();
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+    }
   };
 
   const handleRegenerate = async () => {
-    if (!paper) return;
+    if (!resolvedAssignmentId) {
+      console.error('[regenerate] assignmentId is null — cannot regenerate');
+      alert('Unable to regenerate. Please go back and create a new assignment.');
+      return;
+    }
+
     setRegenerating(true);
     try {
-      await api.post(`/api/assignments/${paper.assignmentId}/regenerate`);
-      router.push("/create");
-    } catch {
+      await api.post(`/api/assignments/${resolvedAssignmentId}/regenerate`);
+      router.push('/create');
+    } catch (err) {
+      console.error('[regenerate] failed:', err);
+      alert('Regeneration failed. Please try again.');
+    } finally {
       setRegenerating(false);
     }
   };
@@ -674,10 +735,8 @@ export default function PaperPage() {
         @media print {
           #paper-document { padding: 20px !important; }
           body * { visibility: hidden; }
-          #paper-document, #paper-document *,
-          #paper-document-desktop, #paper-document-desktop * { visibility: visible; }
-          #paper-document,
-          #paper-document-desktop {
+          #paper-document, #paper-document * { visibility: visible; }
+          #paper-document {
             position: absolute;
             left: 0;
             top: 0;
@@ -688,7 +747,7 @@ export default function PaperPage() {
         }
       `}</style>
 
-      <DesktopPaper paper={paper} allQuestions={allQuestions} onDownload={handleDownload} />
+      <DesktopPaper paper={paper} allQuestions={allQuestions} onDownload={handleDownload} documentId={!isMobileLayout ? "paper-document" : undefined} />
 
       <div
         className="sm:hidden relative min-h-screen overflow-x-hidden flex flex-col"
@@ -700,7 +759,7 @@ export default function PaperPage() {
         }}
       >
         <MobileNavbar />
-        <MobilePaper paper={paper} allQuestions={allQuestions} answerMap={answerMap} onDownload={handleDownload} />
+        <MobilePaper paper={paper} allQuestions={allQuestions} answerMap={answerMap} onDownload={handleDownload} documentId={isMobileLayout ? "paper-document" : undefined} />
 
         <div
           className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between"
