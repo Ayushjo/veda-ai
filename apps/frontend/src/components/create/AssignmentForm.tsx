@@ -104,6 +104,7 @@ export function AssignmentForm() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   const setAssignment = useAssignmentStore((s) => s.setAssignment);
   const setJobStatus = useAssignmentStore((s) => s.setJobStatus);
@@ -114,6 +115,14 @@ export function AssignmentForm() {
       setShowModal(true);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  React.useEffect(() => {
+    const query = window.matchMedia("(min-width: 640px)");
+    const updateViewport = () => setIsDesktop(query.matches);
+    updateViewport();
+    query.addEventListener("change", updateViewport);
+    return () => query.removeEventListener("change", updateViewport);
+  }, []);
 
   const { register, control, handleSubmit, formState: { errors }, watch } =
     useForm<FormValues>({
@@ -226,10 +235,11 @@ export function AssignmentForm() {
         {/* ══════════════════════════════════════════════════════════════
             MOBILE CARD  (sm:hidden — shown only on < 640px)
         ══════════════════════════════════════════════════════════════ */}
-        <div
-          className="sm:hidden w-full rounded-2xl flex flex-col gap-6"
-          style={{ background: "rgba(255,255,255,0.5)", padding: "32px 16px" }}
-        >
+        {!isDesktop && (
+          <div
+            className="sm:hidden w-full rounded-2xl flex flex-col gap-6"
+            style={{ background: "rgba(255,255,255,0.5)", padding: "32px 16px" }}
+          >
 
           {/* ── Header block ── */}
           <div className="flex flex-col gap-0.5">
@@ -457,16 +467,18 @@ export function AssignmentForm() {
             </div>
           </div>
 
-        </div>{/* end MOBILE CARD */}
+          </div>
+        )}{/* end MOBILE CARD */}
 
 
         {/* ══════════════════════════════════════════════════════════════
             DESKTOP CARD  (hidden sm:flex — shown only on ≥ 640px)
         ══════════════════════════════════════════════════════════════ */}
-        <div
-          className="hidden sm:flex w-full max-w-[810px] mx-auto rounded-2xl flex-col"
-          style={{ background: "rgba(255,255,255,0.5)", padding: "32px", gap: "32px" }}
-        >
+        {isDesktop && (
+          <div
+            className="hidden sm:flex w-full max-w-[810px] mx-auto rounded-2xl flex-col"
+            style={{ background: "rgba(255,255,255,0.5)", padding: "32px", gap: "32px" }}
+          >
 
           {/* Section 1: Header */}
           <div className="flex flex-col" style={{ gap: "2px" }}>
@@ -676,7 +688,8 @@ export function AssignmentForm() {
             </div>
 
           </div>{/* end fields */}
-        </div>{/* end DESKTOP CARD */}
+          </div>
+        )}{/* end DESKTOP CARD */}
 
         {/* Error banner — shown when submission fails */}
         {submitError && (
@@ -691,6 +704,7 @@ export function AssignmentForm() {
         )}
 
         {/* Desktop footer — hidden on mobile (mobile footer is in create/page.tsx) */}
+        {isDesktop && (
         <div className="hidden sm:flex w-full max-w-[810px] mx-auto items-center justify-between pt-6 pb-4">
           <button
             type="button"
@@ -710,6 +724,7 @@ export function AssignmentForm() {
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
+        )}
 
       </form>
     </>
