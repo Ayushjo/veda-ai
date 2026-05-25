@@ -8,6 +8,7 @@ import { Sidebar } from "@/components/assignments/Sidebar";
 import { TopBar } from "@/components/assignments/TopBar";
 import api from "@/lib/api";
 import { useAssignmentStore } from "@/store/assignmentStore";
+import { downloadPaper } from "@/lib/pdf-export";
 
 const BG = "var(--font-bricolage), 'Bricolage Grotesque', sans-serif";
 const INTER = "var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif";
@@ -646,99 +647,7 @@ export default function PaperPage() {
   }, [paper]);
 
   const handleDownload = async () => {
-    const element = document.getElementById('paper-document');
-    if (!element) {
-      console.error('paper-document element not found');
-      return;
-    }
-
-    let clone: HTMLElement | null = null;
-
-    try {
-      const html2pdf = (await import('html2pdf.js')).default;
-
-      // Clone the element so we don't mutate the real DOM
-      clone = element.cloneNode(true) as HTMLElement;
-
-      // Inline all computed styles onto every element in the clone
-      // and replace any oklch() values with safe fallbacks
-      const sourceElements = [element, ...Array.from(element.querySelectorAll('*'))] as HTMLElement[];
-      const allElements = [clone, ...Array.from(clone.querySelectorAll('*'))] as HTMLElement[];
-
-      allElements.forEach((el, index) => {
-        const computed = window.getComputedStyle(sourceElements[index] ?? element);
-
-        for (let i = 0; i < computed.length; i++) {
-          const property = computed[i];
-          const value = computed.getPropertyValue(property);
-          const safeValue = value.includes('oklch')
-            ? value.replace(/oklch\([^)]*\)/g, '#000000')
-            : value;
-          el.style.setProperty(property, safeValue, computed.getPropertyPriority(property));
-        }
-
-        // Remove oklch from inline styles by replacing with safe colors
-        const style = el.getAttribute('style') || '';
-        if (style.includes('oklch')) {
-          el.setAttribute('style', style.replace(/oklch\([^)]*\)/g, '#000000'));
-        }
-
-        // Force safe background and color values for common elements
-        el.style.setProperty('color', computed.color.includes('oklch') ? '#1a1a1a' : computed.color);
-        el.style.setProperty(
-          'background-color',
-          computed.backgroundColor.includes('oklch') ? '#ffffff' : computed.backgroundColor
-        );
-      });
-
-      // Append clone off-screen temporarily
-      clone.style.position = 'fixed';
-      clone.style.top = '-9999px';
-      clone.style.left = '-9999px';
-      clone.style.width = '794px';
-      clone.style.backgroundColor = '#ffffff';
-      clone.style.padding = '32px';
-      document.body.appendChild(clone);
-
-      const options = {
-        margin: [10, 10, 10, 10] as [number, number, number, number],
-        filename: `question-paper.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          scrollY: 0,
-          backgroundColor: '#ffffff',
-          onclone: (clonedDoc: Document) => {
-            const allEls = clonedDoc.querySelectorAll('*');
-            allEls.forEach((el) => {
-              const htmlEl = el as HTMLElement;
-              const style = htmlEl.getAttribute('style') || '';
-              if (style.includes('oklch')) {
-                htmlEl.setAttribute(
-                  'style',
-                  style.replace(/oklch\([^)]*\)/g, '#000000')
-                );
-              }
-            });
-          }
-        },
-        jsPDF: {
-          unit: 'mm' as const,
-          format: 'a4' as const,
-          orientation: 'portrait' as const
-        }
-      };
-
-      await html2pdf().set(options).from(clone).save();
-    } catch (err) {
-      console.error('PDF generation failed:', err);
-    } finally {
-      if (clone?.parentNode) {
-        clone.parentNode.removeChild(clone);
-      }
-    }
+    await downloadPaper(`question-paper.pdf`);
   };
 
   const handleRegenerate = async () => {

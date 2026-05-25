@@ -5,8 +5,9 @@ const nextConfig = {
       config.externals = [
         ...(Array.isArray(config.externals) ? config.externals : []),
         'html2pdf.js',
-        'jspdf',
         'html2canvas',
+        'dom-to-image-more',
+        'jspdf',
       ];
     }
     return config;
