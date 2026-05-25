@@ -14,7 +14,13 @@ const httpServer = createServer(app);
 
 // Middleware
 app.use(helmet());
-app.use(cors({ origin: config.clientUrl }));
+app.use(cors({ 
+  origin: [
+    config.clientUrl,
+    "https://veda-ai-frontend-sand.vercel.app"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Health check
